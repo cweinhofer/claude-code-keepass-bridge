@@ -1,0 +1,15 @@
+{
+  "credentials": [
+    { "name": "anthropic-personal-apikey", "env": "ANTHROPIC_PERSONAL_APIKEY", "field": "password" },
+    { "name": "homeassistant-lltoken",     "env": "HOMEASSISTANT_LLTOKEN",     "field": "password" },
+    { "name": "chatapp-accesstoken",       "env": "CHATAPP_ACCESSTOKEN",       "field": "password" },
+    { "name": "acmehosting-admin",         "env": "ACMEHOSTING_USER",          "field": "login"    },
+    { "name": "acmehosting-admin",         "env": "ACMEHOSTING_API_PASSWORD",  "field": "password" },
+    { "name": "riverside-coop-sshdeploy",  "env": "RIVERSIDECOOP_SSH_USER",      "field": "login"    },
+    { "name": "riverside-coop-sshdeploy",  "env": "RIVERSIDECOOP_SSH_PASSWORD",  "field": "password" },
+    { "name": "lighthouse-fellowship-wprestapi", "env": "LIGHTHOUSE_WPRESTAPI_USER",     "field": "login"    },
+    { "name": "lighthouse-fellowship-wprestapi", "env": "LIGHTHOUSE_WPRESTAPI_PASSWORD", "field": "password" },
+    { "name": "citywaterutility",          "env": "CITYWATERUTILITY_EMAIL",     "field": "login"    },
+    { "name": "citywaterutility",          "env": "CITYWATERUTILITY_PASSWORD",  "field": "password" }
+  ]
+}

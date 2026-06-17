@@ -1,0 +1,5 @@
+association.dat
+manifest.json
+manifest-candidate.json
+__pycache__/
+*.pyc
