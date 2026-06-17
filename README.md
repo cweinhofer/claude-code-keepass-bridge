@@ -9,8 +9,8 @@ instance (via the KeePassNatMsg plugin) — without ever writing secret values t
 Lock state (WinHello semi-lock at 5 min, full lock at 6 h) is honored automatically.
 
 This is a personal tool shared as-is — it works for my setup, but it's Windows/PowerShell/
-KeePass 2-specific and hasn't been tested beyond that. No guarantees, but issues and PRs are
-welcome.
+KeePass 2-specific and hasn't been tested beyond that. No guarantees, but I wanted it available
+in case it's useful to others.
 
 ## Prerequisites
 

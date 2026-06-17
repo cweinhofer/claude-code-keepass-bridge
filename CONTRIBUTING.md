@@ -1,6 +1,7 @@
 # Contributing
 
-Issues and pull requests are welcome.
+This is a personal project maintained on a best-effort basis — there's no guarantee issues
+or pull requests will be reviewed promptly, if at all.
 
 ## Contributor agreement
 
