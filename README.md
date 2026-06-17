@@ -6,9 +6,9 @@ compatibility.*
 
 Lets Claude Code read service API keys/tokens from your running, unlocked KeePass 2
 instance (via the KeePassNatMsg plugin) — without ever writing secret values to disk.
-Lock state (WinHello semi-lock at 5 min, full lock at 6 h) is honored automatically.
+Lock state (for example KeePassWinHello semi-lock vs full lock) is honored automatically.
 
-This is a personal tool shared as-is — it works for my setup, but it's Windows/PowerShell/
+This is a personal tool shared as-is. It works for my setup, but it's Windows/PowerShell/
 KeePass 2-specific and hasn't been tested beyond that. No guarantees, but I wanted it available
 in case it's useful to others.
 
@@ -30,7 +30,7 @@ it pulls every entry listed in `manifest.json` from KeePass, sets the correspond
 this happens automatically — just run `claude` as usual.
 
 This is the primary mechanism for accessing credentials. — there's no mid-session fetch path. If KeePass is locked
-at launch (the common case — KeePassWinHello semi-locks after 5 min idle), `claude` still
+at launch (the common case — KeePassWinHello semi-locks the database after X min idle), `claude` still
 launches normally and prints nothing; entries that couldn't be retrieved simply have no
 `$env:` variable set for that session. See "Using credentials" below for what happens
 when Claude needs one of those.
