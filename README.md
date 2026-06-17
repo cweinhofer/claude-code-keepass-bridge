@@ -1,5 +1,9 @@
 # Claude Code KeePass Bridge
 
+*An independent, unofficial community tool. Not affiliated with, endorsed by, or sponsored by
+Anthropic or KeePass. "Claude" is a trademark of Anthropic, PBC, used here only to describe
+compatibility.*
+
 Lets Claude Code read service API keys/tokens from your running, unlocked KeePass 2
 instance (via the KeePassNatMsg plugin) — without ever writing secret values to disk.
 Lock state (WinHello semi-lock at 5 min, full lock at 6 h) is honored automatically.
