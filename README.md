@@ -96,11 +96,13 @@ to `manifest.json` and edit it for your own credentials.
 Migrating a batch of existing plaintext credentials (`.env` files, scripts, etc.) all at once?
 See `BULK-MIGRATION.md` for a workflow that limits how much plaintext exposure that involves.
 
-### Per-entry first-time approval (every new entry, every machine)
+### Per-entry first-time approval (once per entry, ever — not once per machine)
 
-The first time *this* entry is looked up, KeePass shows an "Allow access" popup for the
-"Claude Code" connection. **Check "Remember this decision" / "always allow"** — this
-whitelists the entry permanently so future lookups are silent. Trigger this once, e.g.:
+The first time *this* entry is ever looked up by *any* associated machine, KeePass shows an
+"Allow access" popup. **Check "Remember this decision" / "always allow"** — this whitelists
+the entry permanently (the grant is stored on the entry itself, keyed by host, not by which
+machine/association asked), so every other already-associated machine can read it afterward
+with no further prompt. Trigger it once, e.g.:
 
 ```powershell
 Get-KeePassCredential -Name <name>
@@ -138,6 +140,13 @@ Your role is approving the UAC prompt (step 1) and the KeePass popup (step 4).
    `C:\Program Files\KeePass Password Safe 2\Plugins\` (requires admin — Claude Code will
    launch an elevated PowerShell and you approve the UAC prompt). Restart KeePass.
 
+   The first time KeePass starts back up with the plugin freshly installed, it may show a
+   one-time "The native messaging host was not detected. Install it now?" prompt, followed by
+   a browser-selection screen that requires picking at least one browser. This is for
+   registering with actual browser extensions (KeePassXC-Browser-style) — irrelevant to this
+   bridge, since it talks to the named pipe directly via Python, no browser involved. Picking
+   any single browser (even one without the extension installed) satisfies the dialog harmlessly.
+
 2. *(Claude Code)* Install the Python client: `py -3 -m pip install keepassxc-proxy-client`.
 
 3. *(You)* Get the `.keepass-bridge` folder onto the new machine, however `.claude` itself
@@ -146,11 +155,24 @@ Your role is approving the UAC prompt (step 1) and the KeePass popup (step 4).
    decryption error if `get-credential.py` runs before step 4 is done, so excluding it is
    tidier.
 
-4. *(Claude Code, with your approval)* Perform a fresh one-time association: connect to
-   the NatMsg pipe (`keepassxc\<username>\kpxc_server`), call `associate()` — **you'll
-   get a KeePass popup to approve, name it "Claude Code"** — then DPAPI-protect
-   `{"name": ..., "public_key": ...}` with `win32crypt.CryptProtectData` and save as
-   `association.dat` in this folder.
+4. *(Claude Code, with your approval)* Run `py -3 associate.py` — it connects to the NatMsg
+   pipe and requests a new association. **You'll get a KeePass "Save and allow access" popup
+   to approve**; it saves the result as `association.dat` in this folder.
+
+   **If this KeePass database is shared/synced across multiple machines** (the same `.kdbx`
+   file, not a separate copy per machine — common if you sync it via cloud storage), the
+   association **name** must be unique per machine. `associate.py` suggests
+   `"Claude Code - <hostname>"` as a starting point, but the name actually used is whatever
+   you type in the popup. If KeePass says a key with that name already exists, **decline the
+   overwrite** — overwriting would swap out whichever other machine's association currently
+   uses that name, breaking the bridge there — and re-run `py -3 associate.py <a-different-name>`
+   instead.
+
+   **If a clean run unexpectedly loops** (KeePass keeps re-showing the "already exists" /
+   save dialog no matter what name you enter, even after declining): a previous interrupted
+   attempt likely left a hung `python.exe`/`pythonw.exe` process still holding an open
+   request. Kill all Python processes in Task Manager, fully quit and relaunch KeePass, then
+   retry a single clean `associate.py` run.
 
 5. *(Claude Code)* Add to `$PROFILE`:
    
@@ -158,8 +180,12 @@ Your role is approving the UAC prompt (step 1) and the KeePass popup (step 4).
    Import-Module "$env:USERPROFILE\.claude\.keepass-bridge\Credentials.psm1" -DisableNameChecking
    ```
    
-   ***NB:*** Every existing `http://CCKPB-<name>` entry will need its per-entry first-time approval (see below)
-   re-done on the new machine  — the association is new, so KeePass doesn't yet trust it for any entry.
+   ***NB:*** Per-entry "Allow access" approval is stored on the **entry itself** (Properties >
+   Plugin Data > `KeePassNatMsg Settings`, a flat `{"Allow": [...], "Deny": [...]}` list keyed
+   by host, not by which association/machine asked) — it is *not* re-required per machine.
+   Once any association has approved an entry, every other valid association (any machine
+   that's completed its own one-time step 4) can read it with no further prompt. Only an entry
+   that has *never* been approved by anyone will still prompt — whichever client asks first.
 
 ## Troubleshooting
 
@@ -177,6 +203,10 @@ if you run `Get-KeePassCredential -Name <name>` manually, e.g. for first-time ap
 KeePassNatMsg also pops a Windows toast notification ("receiving credentials for X") on every
 successful lookup — separate from the one-time "Allow access" dialog, and not a bug. To turn it
 off: **Tools > KeePassNatMsg Options > uncheck "Show a notification when credentials are requested"**.
+
+**Stuck in an "already exists" / save-dialog loop during `associate.py`?** See the note in
+step 4 above — kill stray `python.exe`/`pythonw.exe` processes and restart KeePass before
+retrying.
 
 ## Suggested CLAUDE.md language
 
@@ -207,6 +237,8 @@ Add something like this to your global CLAUDE.md so Claude knows the rules of en
 ## Claude Code Keepass Bridge files
 
 - `get-credential.py` — Python script that talks to the running KeePass instance.
+- `associate.py` — one-time setup script (README step 4) that registers this machine with
+  KeePass and saves `association.dat`.
 - `Credentials.psm1` — PowerShell `Get-KeePassCredential` and the `claude` wrapper, imported via `$PROFILE`.
 - `manifest.example.json` — template entries to copy as `manifest.json` and edit for your own credentials.
 - `manifest.json` *(not committed — see `.gitignore`)* — your entry → env-var mappings for automatic injection (**names only, never credential values**).
